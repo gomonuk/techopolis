@@ -21,7 +21,7 @@ public class LoginMainPage extends HelperBase{
         super(driver);
     }
 
-    protected void check() {
+    public void check() {
         List<WebElement> linkElements = new ArrayList<WebElement>();
         linkElements.add(driver.findElement(FIELD_EMAIL));
         linkElements.add(driver.findElement(FIELD_PASSWORD));
@@ -33,9 +33,10 @@ public class LoginMainPage extends HelperBase{
                 .until(ExpectedConditions.visibilityOfAllElements(linkElements));
     }
 
-    public void doLogin(TestBot testBot) {
+    public UserMainPage doLogin(TestBot testBot) {
         type(testBot.getLogin(), FIELD_EMAIL);
         type(testBot.getPassword(), FIELD_PASSWORD);
         click(SIGN_IN_BUTTOM);
+        return new UserMainPage(driver);
     }
 }

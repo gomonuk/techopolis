@@ -7,7 +7,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.google.common.base.Preconditions;
 import java.util.concurrent.TimeUnit;
 
-
 public abstract class HelperBase {
     protected static WebDriver driver;
     private boolean acceptNextAlert = true;
@@ -17,6 +16,8 @@ public abstract class HelperBase {
         check();
     }
 
+    protected HelperBase() {
+    }
 
     protected abstract void check();
 

@@ -15,13 +15,14 @@ public class WrongInput extends TestBase {
 
     @Test
     public void testWrongInput()  {
-        new LoginMainPage(driver).doLogin(new TestBot("TechnopolisOpen18Bot1", "technopolis18"));
-        //Переходим в подарки, и возвращаем экземпляр класса GiftsMainPage.
-        GiftsMainPage giftsMainPage = new UserMainPage(driver).clickGiftsOnToolbar();
-        // Вводим поисковый запрос, и получаем экземпляр промиса.
-        SearchPromise searchPromise = giftsMainPage.typeSearchQuery(SEARCH_QUERY);
+        LoginMainPage loginMainPage = new LoginMainPage(driver);
+        UserMainPage userMainPage = loginMainPage.doLogin(new TestBot("TechnopolisOpen18Bot1", "technopolis18")); //Логинимся
+        GiftsMainPage giftsMainPage = userMainPage.clickGiftsOnToolbar(); //Переходим в подарки
 
-        Assert.assertTrue("Не обнаружено ожидаемой ошибки поиска. ", searchPromise.isEmptySearch());
+        giftsMainPage.typeSearchQuery(SEARCH_QUERY);
+
+        Assert.assertTrue("Не обнаружено ожидаемой ошибки поиска.",
+                giftsMainPage.isEmptySearch());
+
     }
 }
-//можно ли промис держать в пейдже ?

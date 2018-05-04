@@ -6,16 +6,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-import org.openqa.selenium.*;
-
-
 
 public class GiftsMainPage extends HelperBase {
     //check base elements
@@ -24,32 +19,28 @@ public class GiftsMainPage extends HelperBase {
     private static final By MIDDLE_PANEL = By.id("hook_Block_GiftsFrontMRB");
 
     //Loadind control
+    private static final By NOT_EMPTY_SEARCH = By.xpath(".//div[@class='loader-container h-mod']");
     private static final By SEARCH_INPUT = By.xpath(".//input[@id = 'gf-search-input']");
     private static final By LOADING_BAR = By.xpath(".//div[@class='link-show-more_loading']");
 
-    //Notifications
-    private static final By NOTIFICATION = By.xpath(".//div[@id='hook_Block_NotificationsToolbarButton']");
-    private static final By NOTIFICATIONS = By.xpath(".//div[@id='ntf_layer_content_inner']/div");
-
     //Received Gifts
     private static final By MY_GIFTS = By.xpath(".//a[@href='/gifts/my']");
-    private static final By MY_RECEIVED_GIFTS = By.xpath(".//a[@href='/gifts/received']");
-    private static final By RECEIVED_GIFTS = By.xpath(".//div[@class = 'ugrid_cnt']//div[contains(@class, 'gift-card-wide')]");
+    private static final By MY_RECEIVED_GIFTS = By.xpath(".//a[@href='/gifts/sent']");
+    private static final By RECIPIENTS = By.xpath(".//ul[@class='ugrid_cnt']/li");
 
     //logout
     private static final By TOOLBAR_DROPDOWN = By.xpath(".//div[@class='ucard-mini toolbar_ucard']");
     private static final By LOGOUT = By.xpath(".//a[@data-l='t,logoutCurrentUser']");
     private static final By CONFIRM = By.xpath(".//input[@data-l='t,confirm']");
 
-    //trash
-    private static final By GIFT_ID = By.xpath(".//div[@data-pid='552074627201']");
+    //send gift
     private static final By FRIEND_SELECTION_WINDOW = By.xpath(".//div[@class='modal-new_hld']");
-    private static final By FIRST_GIFT = By.xpath(".//div[@data-pid='552074627201']");
-    private static final By ICON_BOT_FREND = By.xpath(".//div[text()='QA18testbot23 QA18testbot23']/../..");
+    private static final By FIRST_GIFT = By.xpath(".//div[@class='gift-front_cnt']//div[contains(@class, 'ugrid_i')]");
+    private static final By IFRAME_GIFT_SENT_WINDOW = By.xpath(".//iframe[@class='modal-new_payment-frame']");
+    private static final By CLOSE_GIFT_SENT_WINDOW = By.id("nohook_modal_close");
 
-    private static final By GIFT_SENT_WINDOW = By.xpath(".//div[@class='pf ']");
-    private static final By CLOSE_GIFT_SENT_WINDOW = By.xpath(".//a[@id='nohook_modal_close']");
-
+    //wrong input
+    private static final By EMPTY_SEARCH = By.xpath(".//div[@class = 'stub-empty __gifts-search']");
 
 
 
@@ -65,77 +56,13 @@ public class GiftsMainPage extends HelperBase {
 
         (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.visibilityOfAllElements(linkElements));
-
     }
-    public List<Wrapper> getReceivedGiftsWrapped() {
-        if (isElementPresent(RECEIVED_GIFTS)) {
-            return Wrapper.Transformer.wrap(driver.findElements(RECEIVED_GIFTS), driver);
+
+    public List<SendGiftFriendCardWrapper> getWrappedRecipients() {
+        if (isElementPresent(RECIPIENTS)) {
+            return SendGiftFriendCardWrapper.wrap(driver.findElements(RECIPIENTS), driver);
         }
-
         return Collections.emptyList();
-    }
-
-    public void scrollDown() {
-        JavascriptExecutor jse = (JavascriptExecutor) driver;
-        jse.executeScript("window.scrollBy(0,25000)", "");
-
-
-    }
-
-    public SearchPromise typeSearchQuery(String query) {
-        type(query + " ", SEARCH_INPUT);
-        return new SearchPromise(driver);
-    }
-
-
-    public boolean isValidSearchQuery(String query) {
-        By SEARCH_QUERY_IN_JSON = By.xpath(String.format(".//div[@class='ugrid_i soh-s posR'][1]/div[contains(@data-seen-params, '%s')]", query));
-        return explicitWait(ExpectedConditions.visibilityOfElementLocated(SEARCH_QUERY_IN_JSON), 5, 50);
-
-    }
-
-    public void checkLoadingBarExplicit() {
-        Assert.assertTrue("Не дождались лоадинг бара",
-                explicitWait(ExpectedConditions.visibilityOfElementLocated(LOADING_BAR), 10, 1));
-
-    }
-
-
-    public void checkGiftbyId() {
-        (new WebDriverWait(driver, 30))
-                .until(ExpectedConditions.visibilityOfElementLocated(GIFT_ID));
-
-    }
-
-    public void checkFriendSelectionWindow() {
-        (new WebDriverWait(driver, 30))
-                .until(ExpectedConditions.visibilityOfElementLocated(FRIEND_SELECTION_WINDOW));
-
-    }
-
-    public void checkGiftSentWindow() {
-        driver.switchTo().frame(driver.findElement(By.xpath(".//iframe[@class='modal-new_payment-frame']")));
-        (new WebDriverWait(driver, 30))
-                .until(ExpectedConditions.visibilityOfElementLocated(GIFT_SENT_WINDOW));
-
-    }
-
-    public void checkLocator(By locator) {
-        (new WebDriverWait(driver, 30))
-                .until(ExpectedConditions.visibilityOfElementLocated(locator));
-
-    }
-
-    public void clickFirstGifts() {
-        click(FIRST_GIFT);
-    }
-
-    public void clickFrendIcon() {
-        click(ICON_BOT_FREND);
-    }
-
-    public void clickMyGifts() {
-        click(MY_GIFTS);
     }
 
     public GiftsReceivedPage clickMyReceivedGifts() {
@@ -143,21 +70,72 @@ public class GiftsMainPage extends HelperBase {
         return new GiftsReceivedPage(driver);
     }
 
+    public void scrollDown() {
+        JavascriptExecutor jse = (JavascriptExecutor) driver;
+        jse.executeScript("window.scrollBy(0,25000)", "");
+    }
 
-    public void clickNotification() {
-        click(NOTIFICATION);
+    public void typeSearchQuery(String query) {
+        type(query + " ", SEARCH_INPUT);
+    }
+
+    public boolean isNotEmptySearch() {
+        return explicitWait(ExpectedConditions.visibilityOfElementLocated(NOT_EMPTY_SEARCH),
+                10, 50);
+    }
+
+    public boolean isGiftSentWindowPresent() {
+        return explicitWait(ExpectedConditions.presenceOfElementLocated(CLOSE_GIFT_SENT_WINDOW),
+                10, 50);
+    }
+
+    public boolean isValidSearchQuery(String query) {
+        By SEARCH_QUERY_IN_JSON = By.xpath(String.format(".//div[contains(@class, '__search')]//div[contains(@data-seen-params, '%s')]", query));
+        return explicitWait(ExpectedConditions.presenceOfElementLocated(SEARCH_QUERY_IN_JSON),
+                10, 50);
+    }
+
+    public boolean isLoadingBarVisibility() {
+        return explicitWait(ExpectedConditions.visibilityOfElementLocated(LOADING_BAR),
+                10, 1);
+    }
+
+    public boolean isPresentFriendSelectionWindow() {
+        return explicitWait(ExpectedConditions.visibilityOfElementLocated(FRIEND_SELECTION_WINDOW),
+                15, 50);
+    }
+
+    public void clickFirstGifts() {
+        click(FIRST_GIFT);
+    }
+
+    public boolean isEmptySearch() {
+        return explicitWait(ExpectedConditions.visibilityOfElementLocated(EMPTY_SEARCH),
+                10, 50);
+    }
+
+    public void clickMyGifts() {
+        click(MY_GIFTS);
     }
 
     public void clickCloseGiftSentWindow() {
-        driver.switchTo().alert().accept();
-
-        driver.switchTo().frame(driver.findElement(By.xpath(".//iframe[@class='modal-new_payment-frame']")));
         click(CLOSE_GIFT_SENT_WINDOW);
     }
 
     public void doLogout() {
+        Assert.assertTrue("Не обнаружен кликабельный локатор TOOLBAR_DROPDOWN",
+                explicitWait(ExpectedConditions.elementToBeClickable(TOOLBAR_DROPDOWN),
+                        10, 5));
         click(TOOLBAR_DROPDOWN);
+
+        Assert.assertTrue("Не обнаружен кликабельный локатор LOGOUT",
+                explicitWait(ExpectedConditions.elementToBeClickable(LOGOUT),
+                        10, 5));
         click(LOGOUT);
+
+        Assert.assertTrue("Не обнаружен кликабельный локатор CONFIRM",
+                explicitWait(ExpectedConditions.elementToBeClickable(CONFIRM),
+                        10, 5));
         click(CONFIRM);
     }
 
